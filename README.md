@@ -7,10 +7,10 @@
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![License](https://img.shields.io/badge/License-Educational-blue)
 
-![Repo Size](https://img.shields.io/github/repo-size/ginathando/Live-Chat)
-![Last Commit](https://img.shields.io/github/last-commit/ginathando/Live-Chat)
-![Open Issues](https://img.shields.io/github/issues/ginathando/Live-Chat)
-![Stars](https://img.shields.io/github/stars/ginathando/Live-Chat?style=social)
+![Repo Size](https://img.shields.io/github/repo-size/ginaisthando/Live-Chat)
+![Last Commit](https://img.shields.io/github/last-commit/ginaisthando/Live-Chat)
+![Open Issues](https://img.shields.io/github/issues/ginaisthando/Live-Chat)
+![Stars](https://img.shields.io/github/stars/ginaisthando/Live-Chat?style=social)
 
 A **real-time messaging platform** built for BrightFuture University students and faculty using **Java WebSocket technology**, **Servlets**, and **modern web technologies**.  
 
