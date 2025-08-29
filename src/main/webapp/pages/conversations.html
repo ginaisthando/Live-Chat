@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversations - BrightFuture University Chat</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-university"></i>
+                <span>BrightFuture University Chat</span>
+            </div>
+            <div class="nav-user">
+                <span id="currentUser">User</span>
+                <a href="home" class="btn btn-secondary">
+                    <i class="fas fa-home"></i>
+                    Home
+                </a>
+                <form action="home" method="post" style="display: inline;">
+                    <input type="hidden" name="action" value="logout">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </nav>
+        
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2><i class="fas fa-comments"></i> Live Conversations</h2>
+                <div class="chat-info">
+                    <span id="connectionStatus" class="status-disconnected">
+                        <i class="fas fa-circle"></i>
+                        Disconnected
+                    </span>
+                    <span id="userCount">0 users online</span>
+                </div>
+            </div>
+            
+            <div class="chat-window" id="chatWindow">
+                <div class="welcome-message">
+                    <i class="fas fa-info-circle"></i>
+                    Welcome to the BrightFuture University Chat! Messages will appear here in real-time.
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="input-group">
+                    <input type="text" id="messageInput" placeholder="Type your message here..." maxlength="500">
+                    <button id="sendButton" onclick="sendMessage()" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Send
+                    </button>
+                </div>
+                <div class="chat-controls">
+                    <button onclick="clearChat()" class="btn btn-secondary">
+                        <i class="fas fa-trash"></i>
+                        Clear Chat
+                    </button>
+                    <button onclick="toggleNotifications()" class="btn btn-secondary" id="notificationToggle">
+                        <i class="fas fa-bell"></i>
+                        Notifications: ON
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notification permission modal -->
+        <div id="notificationModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-bell"></i> Enable Notifications</h3>
+                    <span class="close" onclick="closeNotificationModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>Would you like to receive notifications for new messages?</p>
+                    <button onclick="enableNotifications()" class="btn btn-primary">Enable</button>
+                    <button onclick="closeNotificationModal()" class="btn btn-secondary">No Thanks</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/chat.js"></script>
+    
+    <script>
+        // Initialize chat when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current user (this would be populated by the servlet)
+            const username = '<%= request.getAttribute("username") != null ? request.getAttribute("username") : "User" %>';
+            if (username !== '<%= request.getAttribute("username") != null ? request.getAttribute("username") : "User" %>') {
+                document.getElementById('currentUser').textContent = username;
+            }
+            
+            // Initialize WebSocket connection
+            initializeChat();
+            
+            // Ask for notification permission
+            if (Notification.permission === 'default') {
+                setTimeout(() => {
+                    document.getElementById('notificationModal').style.display = 'block';
+                }, 2000);
+            }
+        });
+        
+        // Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Notification functions
+        let notificationsEnabled = localStorage.getItem('notificationsEnabled') === 'true';
+        
+        function toggleNotifications() {
+            notificationsEnabled = !notificationsEnabled;
+            localStorage.setItem('notificationsEnabled', notificationsEnabled);
+            
+            const toggleBtn = document.getElementById('notificationToggle');
+            toggleBtn.innerHTML = notificationsEnabled ? 
+                '<i class="fas fa-bell"></i> Notifications: ON' : 
+                '<i class="fas fa-bell-slash"></i> Notifications: OFF';
+        }
+        
+        function enableNotifications() {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    notificationsEnabled = true;
+                    localStorage.setItem('notificationsEnabled', 'true');
+                    toggleNotifications();
+                }
+                closeNotificationModal();
+            });
+        }
+        
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'none';
+        }
+        
+        function showNotification(message) {
+            if (notificationsEnabled && Notification.permission === 'granted' && document.hidden) {
+                new Notification('BrightFuture Chat', {
+                    body: message,
+                    icon: '../css/university-icon.png'
+                });
+            }
+        }
+        
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat window? This will only clear your local view.')) {
+                document.getElementById('chatWindow').innerHTML = 
+                    '<div class="welcome-message"><i class="fas fa-info-circle"></i> Chat cleared locally.</div>';
+            }
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (connected) {
+                statusElement.className = 'status-connected';
+                statusElement.innerHTML = '<i class="fas fa-circle"></i> Connected';
+            } else {
+                statusElement.className = 'status-disconnected';
+                statusElement.innerHTML = '<i class="fas fa-circle"></i> Disconnected';
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('notificationModal');
+            if (event.target === modal) {
+                closeNotificationModal();
+            }
+        }
+    </script>
+</body>
+</html>

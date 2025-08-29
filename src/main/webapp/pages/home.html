@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - BrightFuture University Chat</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-university"></i>
+                <span>BrightFuture University</span>
+            </div>
+            <div class="nav-user">
+                <span id="welcomeUser">Welcome, User!</span>
+                <form action="home" method="post" style="display: inline;">
+                    <input type="hidden" name="action" value="logout">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </nav>
+        
+        <div class="main-content">
+            <div class="welcome-section">
+                <h1><i class="fas fa-home"></i> Welcome to BrightFuture University Chat</h1>
+                <p class="welcome-message">
+                    Connect with fellow students and faculty members in real-time. 
+                    Join conversations, share knowledge, and build your academic community.
+                </p>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Live Conversations</h3>
+                    <p>Join real-time chat rooms and engage with your academic community instantly.</p>
+                    <a href="conversations" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i>
+                        Start Chatting
+                    </a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h3>Camera Features</h3>
+                    <p>Take photos and participate in video interactions with other users.</p>
+                    <a href="#" class="btn btn-secondary" onclick="showCameraFeature()">
+                        <i class="fas fa-video"></i>
+                        Open Camera
+                    </a>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Community</h3>
+                    <p>Connect with students and faculty from all departments and programs.</p>
+                    <a href="conversations" class="btn btn-success">
+                        <i class="fas fa-user-friends"></i>
+                        Join Community
+                    </a>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> Platform Guidelines</h2>
+                <ul class="guidelines-list">
+                    <li><i class="fas fa-check"></i> Be respectful to all community members</li>
+                    <li><i class="fas fa-check"></i> Keep conversations academic and appropriate</li>
+                    <li><i class="fas fa-check"></i> No spam or inappropriate content</li>
+                    <li><i class="fas fa-check"></i> Report any issues to university administrators</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Camera Modal -->
+        <div id="cameraModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-camera"></i> Camera Feature</h3>
+                    <span class="close" onclick="closeCameraModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <video id="videoElement" width="400" height="300" autoplay></video>
+                    <canvas id="canvasElement" width="400" height="300" style="display: none;"></canvas>
+                    <div class="camera-controls">
+                        <button onclick="startCamera()" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Start Camera
+                        </button>
+                        <button onclick="takePhoto()" class="btn btn-success">
+                            <i class="fas fa-camera"></i> Take Photo
+                        </button>
+                        <button onclick="stopCamera()" class="btn btn-danger">
+                            <i class="fas fa-stop"></i> Stop Camera
+                        </button>
+                    </div>
+                    <div id="photoResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get username from server (this would be set by the servlet)
+        // For now, we'll use a placeholder
+        document.addEventListener('DOMContentLoaded', function() {
+            // This would typically be populated by the servlet
+            const username = '<%= request.getAttribute("username") != null ? request.getAttribute("username") : "User" %>';
+            if (username !== '<%= request.getAttribute("username") != null ? request.getAttribute("username") : "User" %>') {
+                document.getElementById('welcomeUser').textContent = 'Welcome, ' + username + '!';
+            }
+        });
+        
+        // Camera functionality
+        let videoStream = null;
+        
+        function showCameraFeature() {
+            document.getElementById('cameraModal').style.display = 'block';
+        }
+        
+        function closeCameraModal() {
+            document.getElementById('cameraModal').style.display = 'none';
+            stopCamera();
+        }
+        
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('videoElement').srcObject = videoStream;
+            } catch (err) {
+                alert('Error accessing camera: ' + err.message);
+            }
+        }
+        
+        function takePhoto() {
+            const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('canvasElement');
+            const context = canvas.getContext('2d');
+            
+            if (videoStream) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/png');
+                
+                const img = document.createElement('img');
+                img.src = imageData;
+                img.style.width = '200px';
+                img.style.height = '150px';
+                img.style.border = '2px solid #3498db';
+                img.style.marginTop = '10px';
+                
+                const photoResult = document.getElementById('photoResult');
+                photoResult.innerHTML = '<h4>Photo captured:</h4>';
+                photoResult.appendChild(img);
+            } else {
+                alert('Please start the camera first.');
+            }
+        }
+        
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+                document.getElementById('videoElement').srcObject = null;
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('cameraModal');
+            if (event.target === modal) {
+                closeCameraModal();
+            }
+        }
+    </script>
+</body>
+</html>

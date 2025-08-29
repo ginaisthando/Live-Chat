@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - BrightFuture University Chat</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <div class="header">
+                <i class="fas fa-university"></i>
+                <h1>BrightFuture University</h1>
+                <h2>Chat Platform</h2>
+            </div>
+            
+            <form id="loginForm" action="login" method="post">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i>
+                        Username
+                    </label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </button>
+                
+                <div class="auth-links">
+                    <p>Don't have an account? <a href="register">Register here</a></p>
+                </div>
+                
+                <div class="demo-accounts">
+                    <h3>Demo Accounts:</h3>
+                    <p><strong>Admin:</strong> admin / admin123</p>
+                    <p><strong>Student:</strong> student1 / password123</p>
+                    <p><strong>Professor:</strong> professor1 / prof123</p>
+                </div>
+            </form>
+            
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Display server-side error messages
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const success = urlParams.get('success');
+        
+        if (error) {
+            document.getElementById('errorMessage').textContent = error;
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+        
+        if (success) {
+            document.getElementById('successMessage').textContent = success;
+            document.getElementById('successMessage').style.display = 'block';
+        }
+        
+        // Form validation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                e.preventDefault();
+                document.getElementById('errorMessage').textContent = 'Please enter both username and password.';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
